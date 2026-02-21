@@ -1,6 +1,5 @@
 # SEFNet: Selective Equivariant Features for Robust Scale-Adaptive UAV Tracking
 
-[![Paper](https://img.shields.io/badge/Paper-IEEE-blue)](https://ieeexplore.ieee.org/)
 [![Python](https://img.shields.io/badge/Python-3.8+-green)](https://python.org)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-red)](https://pytorch.org)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
