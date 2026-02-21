@@ -1,0 +1,90 @@
+# ===========================================================================
+# SEFNet ViT-Base Experiment Configuration
+# ===========================================================================
+# This file overrides the default config in configs/sefnet_config.py.
+# All values here match Section 5.1.3 (Implementation Details) of the paper.
+#
+# Usage:
+#   python tools/train.py --config experiments/sefnet_vitb/config.yaml
+#   python tools/test.py  --config experiments/sefnet_vitb/config.yaml --dataset uav123
+# ===========================================================================
+
+MODEL:
+  BACKBONE:
+    TYPE: "vit_base_patch16_224"    # ViT-Base, 12 layers, 768-dim
+    PRETRAINED: True
+    NUM_LAYERS: 12                  # L = 12
+    EMBED_DIM: 768
+    PROJECT_DIM: 256                # C = 256
+    PATCH_SIZE: 16
+
+  EDM:
+    KERNEL_SIZE: 7                  # K = 7 (7×7 spatial grid)
+    COEFF_HIDDEN_DIM: 64           # MLP hidden dim for coefficient generator
+    N_EQ: 16                       # Harmonic bases for equivariant subspace
+    N_INV: 8                       # Gaussian derivative bases for invariant subspace
+    N_CP: 16                       # Directional bases for coupled subspace
+    # Total basis functions: N = N_EQ + N_INV + N_CP = 40
+    EQ_SIGMAS: [1.0, 2.0, 3.0]    # σ^S (small scale, Eq.14)
+    INV_SIGMAS: [4.0, 6.0, 8.0]   # σ^L (large scale, Eq.13)
+    CP_ANGULAR_FREQS: [1, 2, 3, 4] # n ∈ {1,2,3,4} (Eq.15-16)
+    EPSILON: 0.10                   # Bandwidth ε (Eq.3-5)
+
+  GAB:
+    FUSION_TEMPERATURE: 0.5         # τ for softmax fusion (Eq.22)
+    INV_TAU: 0.5                    # τ_inv for reliability (Eq.18)
+    NUM_HEADS: 8                    # Cross-attention heads
+
+  ALPHA:
+    INIT: 1.0                       # Initial scale exponent
+    MIN: 0.1                        # Lower bound for α
+    MAX: 2.0                        # Upper bound for α
+    REGULARIZATION: 0.01            # λ_α regularization
+
+DATA:
+  SEARCH_SIZE: 384                  # Search region: 384×384
+  TEMPLATE_SIZE: 192                # Template region: 192×192
+  SEARCH_FACTOR: 4.0               # Context factor
+  TEMPLATE_FACTOR: 2.0
+
+TRAIN:
+  EPOCHS: 300
+  BATCH_SIZE: 16
+  OPTIMIZER: "AdamW"
+  LR: 0.0001                       # 10^{-4}
+  WEIGHT_DECAY: 0.0001             # 10^{-4}
+  LR_SCHEDULER: "cosine"
+  WARMUP_EPOCHS: 10
+  NUM_WORKERS: 8
+  SEED: 42
+  GRAD_CLIP_NORM: 1.0
+
+  LOSS:
+    LAMBDA_CLS: 2.0                 # Focal loss weight
+    LAMBDA_REG: 5.0                 # L1 regression weight
+    LAMBDA_IOU: 2.0                 # GIoU loss weight
+    LAMBDA_EQ: 1.0                  # Equivariance loss weight
+    SCALE_RANGE: [0.5, 2.0]        # Log-uniform sampling for L_eq
+
+  DATASETS:
+    - "lasot"
+    - "got10k"
+    - "coco"
+    - "trackingnet"
+
+TEST:
+  SEARCH_FACTOR: 4.0
+  EMA_MOMENTUM: 0.9                # Algo 2, line 11
+  GPU_ID: 0
+
+DATASET:
+  UAV123:
+    ROOT: "data/UAV123"
+  LASOT:
+    ROOT: "data/LaSOT"
+  VISDRONE:
+    ROOT: "data/VisDrone-SOT"
+  ARDMAV:
+    ROOT: "data/ARD-MAV"
+  VOTS2024:
+    ROOT: "data/VOTS2024"
