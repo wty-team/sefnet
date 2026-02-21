@@ -1,0 +1,57 @@
+# SEFNet ViT-Base Configuration
+# Reference: Section 5.3 (Implementation Details)
+
+MODEL:
+  NAME: SEFNet
+  BACKBONE: vit_base_patch16
+  CHANNELS: 256
+  N_LAYERS: 12
+  CANDIDATE_LAYERS: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+EDM:
+  KERNEL_SIZE: 7
+  N_INV_BASIS: 8       # Sec 5.3: N_inv = 8
+  N_EQ_BASIS: 16       # Sec 5.3: N_eq = 16
+  N_CP_BASIS: 16       # Sec 5.3: N_cp = 16
+  SIGMA_LARGE: [4.0, 6.0, 8.0]    # Eq. 13: invariant basis scales
+  SIGMA_SMALL: [1.0, 2.0, 3.0]    # Eq. 14: equivariant basis scales
+  ANGULAR_ORDERS: [1, 2, 3, 4]    # Eq. 15-16: coupled angular orders
+  HIDDEN_DIM: 64
+  RADIAL_HIDDEN_DIM: 32
+  EPSILON: 0.10        # Spectral boundary parameter
+
+GAB:
+  N_HEADS: 8
+  MLP_RATIO: 4.0
+  DROPOUT: 0.0
+  TAU_INV: 0.5         # Eq. 18: invariant reliability temperature
+  TAU_FUSION: 1.0      # Eq. 22: fusion softmax temperature
+  SELECTION_TEMPERATURE: 0.1  # Gumbel-Softmax temperature
+
+HEAD:
+  TYPE: corner
+  HIDDEN_DIM: 256
+
+LOSS:
+  LAMBDA_CLS: 2.0      # Table D.7
+  LAMBDA_REG: 5.0
+  LAMBDA_IOU: 2.0
+  LAMBDA_EQ: 1.0
+
+DATA:
+  ROOT: data
+  DATASET: uav123
+  TEMPLATE_SIZE: 192
+  SEARCH_SIZE: 384
+  SEARCH_FEAT_SIZE: 24
+  CONTEXT_FACTOR: 4.0
+  NUM_WORKERS: 8
+
+TRAIN:
+  EPOCHS: 500
+  BATCH_SIZE: 32
+  LR: 4.0e-4            # Sec 5.3: 4e-4 (backbone: 4e-5)
+  WEIGHT_DECAY: 1.0e-4
+  WARMUP_EPOCHS: 5
+  LOG_INTERVAL: 50
+  SAVE_INTERVAL: 20
